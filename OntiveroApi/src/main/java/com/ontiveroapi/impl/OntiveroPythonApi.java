@@ -1,5 +1,8 @@
 package com.ontiveroapi.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -8,6 +11,7 @@ import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.json.JsonGenerator;
 import com.models.Maceta;
@@ -16,7 +20,10 @@ import com.ontiveroapi.IOntiveroPythonApi;
 import com.ontiveroapi.common.CommonApiConnector;
 
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 @PropertySource("classpath:python-api.properties")
 @Component
@@ -38,6 +45,18 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		return getListadoRecomendaciones(makeCallStrResponse(request));
 	}
 
+	@Override
+	public String getPedidosEntregadosML(MultipartFile filePedidosML) {
+		String fileName = filePedidosML.getName();
+		File file = getFileFromMultipart(filePedidosML, fileName);
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("pedidosEntregados", fileName,
+						RequestBody.create(MediaType.parse("application/octet-stream"), file))
+				.build();
+		Request request = new Request.Builder().url(baseUrl + "/pedidosEntregadosML").post(requestBody).build();
+		return makeCallStrResponse(request);
+	}
+
 	@SuppressWarnings("unchecked")
 	private List<Maceta> getListadoRecomendaciones(String makeCallStrResponse) {
 		JSONArray listCodigos = JsonGenerator.convertStringToJSONArray(makeCallStrResponse);
@@ -50,4 +69,16 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		return macetas;
 	}
 
+	private File getFileFromMultipart(MultipartFile filePedidosML, String fileName) {
+		File file = new File("pedidosFile");
+		FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(file);
+			fos.write(filePedidosML.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return file;
+	}
 }

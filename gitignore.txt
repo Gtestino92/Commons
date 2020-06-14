@@ -1,0 +1,8 @@
+/Models/target/
+/Models/bin/
+
+/Models/.classpath
+
+/Models/.project
+
+/Models/.settings/
