@@ -1,0 +1,228 @@
+package com.macetasontivero.mongo.services.impl;
+
+import static com.mongodb.client.model.Updates.set;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.springframework.stereotype.Component;
+
+import com.macetasontivero.models.EstadoPedido;
+import com.macetasontivero.models.Maceta;
+import com.macetasontivero.models.Pedido;
+import com.macetasontivero.mongo.services.IPedidosService;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+
+@Component
+public class PedidosService implements IPedidosService {
+
+	private static final String MONGODB_PEDIDOS = "pedidos";
+	private static final String MONGODB_PEDIDOS_INFO = "pedidos_info";
+	private static final String CELULAR = "celular";
+	private static final String NOMBRE = "nombre";
+	private static final String MAIL = "mail";
+	private static final String TOTAL = "total";
+	private static final String ESTADO_PEDIDO = "estado_pedido";
+	private static final String ID_PEDIDO = "id_pedido";
+	private static final String ID_DEFAULT_MONGO = "_id";
+	private static final String FECHA_SOLICITUD = "fecha_solicitud";
+	private static final String FECHA_ENTREGA = "fecha_entrega";
+
+	private static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+	@Override
+	public List<Pedido> getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado) throws ParseException {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+		List<Pedido> pedidos = new ArrayList<>();
+
+		MongoCursor<Document> cursorInfo = pedidosInfoCollection.find(Filters.eq(ESTADO_PEDIDO, estado.getCode()))
+				.iterator();
+		while (cursorInfo.hasNext()) {
+			Document infoDoc = cursorInfo.next();
+			String celular = infoDoc.getString(CELULAR);
+			String mail = infoDoc.getString(MAIL);
+			String nombre = infoDoc.getString(NOMBRE);
+			Long total = Long.parseLong(infoDoc.getString(TOTAL));
+			Long idPedido = Long.parseLong(infoDoc.getString(ID_PEDIDO));
+			Document pedidoListaDoc = pedidosCollection.find(Filters.eq(ID_PEDIDO, idPedido.toString())).first();
+			List<Maceta> listaPedido = getListadoFromPedidoDoc(pedidoListaDoc);
+			Pedido pedido = Pedido.builder().nombre(nombre).celular(celular).mail(mail).total(total).idPedido(idPedido)
+					.listadoMacetas(listaPedido).estadoPedido(estado).build();
+			try {
+				pedido.setFechaSolicitud(formatter.parse(infoDoc.getString(FECHA_SOLICITUD)));
+				if (EstadoPedido.ENTREGADO.equals(estado))
+					pedido.setFechaEntrega(formatter.parse(infoDoc.getString(FECHA_ENTREGA)));
+			} catch (ParseException e) {
+				throw e;
+			}
+			pedidos.add(pedido);
+		}
+
+		return pedidos;
+	}
+
+	@Override
+	public void altaPedido(MongoDatabase mongoDb, Pedido pedido) {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+
+		Document pedidoInfoDocument = new Document();
+		Long idPedido = getNextIdPedido(pedidosCollection);
+		pedidoInfoDocument.append(ID_PEDIDO, idPedido.toString());
+		if (!"".equals(pedido.getCelular()) && pedido.getCelular() != null)
+			pedidoInfoDocument.append(CELULAR, pedido.getCelular());
+		pedidoInfoDocument.append(MAIL, pedido.getMail());
+		pedidoInfoDocument.append(NOMBRE, pedido.getNombre());
+		pedidoInfoDocument.append(ESTADO_PEDIDO, pedido.getEstadoPedido().getCode());
+		pedidoInfoDocument.append(TOTAL, pedido.getTotal().toString());
+		if (pedido.getEstadoPedido().equals(EstadoPedido.PENDIENTE))
+			pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
+		else {
+			pedidoInfoDocument.append(FECHA_ENTREGA, formatter.format(pedido.getFechaEntrega()));
+			pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
+		}
+		pedidosInfoCollection.insertOne(pedidoInfoDocument);
+
+		Document pedidoDocument = new Document();
+		pedidoDocument.append(ID_PEDIDO, idPedido.toString());
+		for (int i = 0; i < pedido.getListadoMacetas().size(); i++) {
+			Maceta modeloPedido = pedido.getListadoMacetas().get(i);
+			pedidoDocument.append(modeloPedido.getCodigoNew(), modeloPedido.getCantSolicitada());
+		}
+		pedidosCollection.insertOne(pedidoDocument);
+
+	}
+
+	@Override
+	public List<Maceta> getListadoPedidoById(MongoDatabase mongoDb, Long idPedido) {
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+		Document pedidoListaDoc = pedidosCollection.find(Filters.eq(ID_PEDIDO, idPedido.toString())).first();
+		return getListadoFromPedidoDoc(pedidoListaDoc);
+	}
+
+	@Override
+	public void setPedidoAsEntregado(MongoDatabase mongoDb, Long idPedido) {
+		Date fechaHoy = new Date();
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		Bson filter = Filters.eq(ID_PEDIDO, idPedido.toString());
+		Bson updateOperationFecha = set(FECHA_ENTREGA, formatter.format(fechaHoy));
+		Bson updateOperationEstado = set(ESTADO_PEDIDO, EstadoPedido.ENTREGADO.getCode());
+		pedidosInfoCollection.updateOne(filter, updateOperationFecha);
+		pedidosInfoCollection.updateOne(filter, updateOperationEstado);
+	}
+
+	@Override
+	public void modificarPedido(MongoDatabase mongoDb, Pedido pedido) {
+
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		Bson filter = Filters.eq(ID_PEDIDO, pedido.getIdPedido().toString());
+		Bson updateOperationTotal = set(TOTAL, pedido.getTotal().toString());
+		pedidosInfoCollection.updateOne(filter, updateOperationTotal);
+
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+		pedidosCollection.deleteOne(filter);
+		Document pedidoModif = new Document();
+		pedidoModif.append(ID_PEDIDO, pedido.getIdPedido().toString());
+		for (int i = 0; i < pedido.getListadoMacetas().size(); i++) {
+			Maceta modeloPedido = pedido.getListadoMacetas().get(i);
+			pedidoModif.append(modeloPedido.getCodigoNew(), modeloPedido.getCantSolicitada());
+		}
+		pedidosCollection.insertOne(pedidoModif);
+	}
+
+	@Override
+	public void cancelarPedido(MongoDatabase mongoDb, Long idPedido) {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		Bson filter = Filters.eq(ID_PEDIDO, idPedido.toString());
+		Bson updateOperationEstado = set(ESTADO_PEDIDO, EstadoPedido.CANCELADO.getCode());
+		pedidosInfoCollection.updateOne(filter, updateOperationEstado);
+	}
+
+	@Override
+	public boolean pedidoExiste(MongoDatabase mongoDb, Long idPedido, EstadoPedido estado) {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+		Bson filterInfo = Filters.and(Filters.eq(ID_PEDIDO, idPedido.toString()),
+				Filters.eq(ESTADO_PEDIDO, estado.getCode()));
+		Bson filterLista = Filters.eq(ID_PEDIDO, idPedido.toString());
+		MongoCursor<Document> cursor = pedidosCollection.find(filterLista).iterator();
+		MongoCursor<Document> cursorInfo = pedidosInfoCollection.find(filterInfo).iterator();
+		return (cursor.hasNext() && cursorInfo.hasNext());
+	}
+
+	@Override
+	public void insertPedido(MongoDatabase mongoDb, Pedido pedido) {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+
+		Document pedidoInfoDocument = new Document();
+		Long idPedido = getNextIdPedido(pedidosCollection);
+		pedidoInfoDocument.append(ID_PEDIDO, idPedido.toString());
+		if (!"".equals(pedido.getCelular()) && pedido.getCelular() != null)
+			pedidoInfoDocument.append(CELULAR, pedido.getCelular());
+		pedidoInfoDocument.append(MAIL, pedido.getMail());
+		pedidoInfoDocument.append(NOMBRE, pedido.getNombre());
+		pedidoInfoDocument.append(ESTADO_PEDIDO, pedido.getEstadoPedido().getCode());
+		pedidoInfoDocument.append(TOTAL, pedido.getTotal().toString());
+		pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
+		pedidosInfoCollection.insertOne(pedidoInfoDocument);
+
+		Document pedidoDocument = new Document();
+		pedidoDocument.append(ID_PEDIDO, idPedido.toString());
+		for (int i = 0; i < pedido.getListadoMacetas().size(); i++) {
+			Maceta modeloPedido = pedido.getListadoMacetas().get(i);
+			pedidoDocument.append(modeloPedido.getCodigoNew(), modeloPedido.getCantSolicitada());
+		}
+		pedidosCollection.insertOne(pedidoDocument);
+
+	}
+
+	private List<Maceta> getListadoFromPedidoDoc(Document pedidoListaDoc) {
+		List<Maceta> listado = new ArrayList<>();
+		Set<String> keys = pedidoListaDoc.keySet();
+		keys.remove(ID_DEFAULT_MONGO);
+		keys.remove(ID_PEDIDO);
+		Iterator<String> iterator = keys.iterator();
+		while (iterator.hasNext()) {
+			Object key = iterator.next();
+			Integer value = (Integer) pedidoListaDoc.get(key);
+			listado.add(Maceta.builder().codigoNew((String) key).cantSolicitada(value).build());
+		}
+		return listado;
+	}
+
+	private Long getNextIdPedido(MongoCollection<Document> pedidosCollection) {
+		if (pedidosCollection == null || pedidosCollection.countDocuments() == 0)
+			return Long.parseLong("0");
+		else {
+			List<String> listIdPedidos = new ArrayList<>();
+			MongoCursor<Document> cursor = pedidosCollection.find().iterator();
+			while (cursor.hasNext()) {
+				Document info = cursor.next();
+				listIdPedidos.add(info.getString(ID_PEDIDO));
+			}
+			return getMaxIdFromList(listIdPedidos) + 1;
+		}
+	}
+
+	private Long getMaxIdFromList(List<String> listIdPedidos) {
+		List<Long> idPedidosLong = new ArrayList<>();
+		for (String id : listIdPedidos) {
+			idPedidosLong.add(Long.parseLong(id));
+		}
+		return Collections.max(idPedidosLong);
+	}
+
+}
