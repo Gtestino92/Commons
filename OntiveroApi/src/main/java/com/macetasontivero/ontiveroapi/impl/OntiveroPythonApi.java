@@ -1,4 +1,4 @@
-package com.ontiveroapi.impl;
+package com.macetasontivero.ontiveroapi.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,11 +13,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.json.JsonGenerator;
-import com.models.Maceta;
-import com.models.Pedido;
-import com.ontiveroapi.IOntiveroPythonApi;
-import com.ontiveroapi.common.CommonApiConnector;
+import com.macetasontivero.json.JsonGenerator;
+import com.macetasontivero.models.Maceta;
+import com.macetasontivero.models.Pedido;
+import com.macetasontivero.ontiveroapi.IOntiveroPythonApi;
+import com.macetasontivero.ontiveroapi.common.CommonApiConnector;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -51,7 +51,7 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		File file = getFileFromMultipart(filePedidosML, fileName);
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
 				.addFormDataPart("pedidosEntregados", fileName,
-						RequestBody.create(MediaType.parse("application/octet-stream"), file))
+						RequestBody.create(file, MediaType.parse("application/octet-stream")))
 				.build();
 		Request request = new Request.Builder().url(baseUrl + "/pedidosEntregadosML").post(requestBody).build();
 		return makeCallStrResponse(request);
