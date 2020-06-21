@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.macetasontivero.exceptions.ApiConnectionException;
 import com.macetasontivero.exceptions.InvalidRequestApiException;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -24,7 +25,7 @@ public abstract class CommonApiConnector {
 			ResponseBody body = response.body();
 			strResponse = body.string();
 			MediaType contentType = body.contentType();
-			return response.newBuilder().body(ResponseBody.create(strResponse, contentType)).build().body().string();
+			return response.newBuilder().body(ResponseBody.create(contentType, strResponse)).build().body().string();
 		} catch (IOException e) {
 			throw new ApiConnectionException("Error de conexión con la API");
 		}

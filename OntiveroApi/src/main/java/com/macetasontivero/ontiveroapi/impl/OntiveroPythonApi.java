@@ -51,7 +51,7 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		File file = getFileFromMultipart(filePedidosML, fileName);
 		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
 				.addFormDataPart("pedidosEntregados", fileName,
-						RequestBody.create(file, MediaType.parse("application/octet-stream")))
+						RequestBody.create(MediaType.parse("application/octet-stream"), file))
 				.build();
 		Request request = new Request.Builder().url(baseUrl + "/pedidosEntregadosML").post(requestBody).build();
 		return makeCallStrResponse(request);
