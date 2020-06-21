@@ -1,4 +1,4 @@
-package com.macetasontivero.ontiveroapi.impl;
+package com.macetasontivero.core.ontiveroapi.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,11 +13,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.macetasontivero.json.JsonGenerator;
-import com.macetasontivero.models.Maceta;
-import com.macetasontivero.models.Pedido;
-import com.macetasontivero.ontiveroapi.IOntiveroPythonApi;
-import com.macetasontivero.ontiveroapi.common.CommonApiConnector;
+import com.macetasontivero.core.commonsmodels.json.JsonGenerator;
+import com.macetasontivero.core.commonsmodels.models.Maceta;
+import com.macetasontivero.core.commonsmodels.models.Pedido;
+import com.macetasontivero.core.ontiveroapi.IOntiveroPythonApi;
+import com.macetasontivero.core.ontiveroapi.common.CommonApiConnector;
 
 import okhttp3.FormBody;
 import okhttp3.MediaType;

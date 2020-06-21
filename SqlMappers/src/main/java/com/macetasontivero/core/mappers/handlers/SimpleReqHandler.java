@@ -1,11 +1,11 @@
-package com.macetasontivero.mappers.handlers;
+package com.macetasontivero.core.mappers.handlers;
 
 import java.sql.Connection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.macetasontivero.exceptions.SQLConnectionErrorException;
-import com.macetasontivero.mappers.managers.ConnectionManager;
+import com.macetasontivero.core.commonsmodels.exceptions.SQLConnectionErrorException;
+import com.macetasontivero.core.mappers.managers.ConnectionManager;
 
 public abstract class SimpleReqHandler<T, Y> {
 

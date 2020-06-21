@@ -1,4 +1,4 @@
-package com.macetasontivero.mongo.services.impl;
+package com.macetasontivero.core.mongo.services.impl;
 
 import static com.mongodb.client.model.Updates.set;
 
@@ -15,10 +15,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.stereotype.Component;
 
-import com.macetasontivero.models.EstadoPedido;
-import com.macetasontivero.models.Maceta;
-import com.macetasontivero.models.Pedido;
-import com.macetasontivero.mongo.services.IPedidosService;
+import com.macetasontivero.core.commonsmodels.models.EstadoPedido;
+import com.macetasontivero.core.commonsmodels.models.Maceta;
+import com.macetasontivero.core.commonsmodels.models.Pedido;
+import com.macetasontivero.core.mongo.services.IPedidosService;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;

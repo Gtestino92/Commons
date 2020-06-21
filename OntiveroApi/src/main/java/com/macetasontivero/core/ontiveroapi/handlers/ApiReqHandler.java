@@ -1,4 +1,4 @@
-package com.macetasontivero.ontiveroapi.handlers;
+package com.macetasontivero.core.ontiveroapi.handlers;
 
 public abstract class ApiReqHandler<T, Y> {
 
