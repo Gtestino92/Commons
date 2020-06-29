@@ -1,9 +1,9 @@
-package com.macetasontivero.core.ontiveroapi.common;
+package com.ontiveroapi.common;
 
 import java.io.IOException;
 
-import com.macetasontivero.core.commonsmodels.exceptions.ApiConnectionException;
-import com.macetasontivero.core.commonsmodels.exceptions.InvalidRequestApiException;
+import com.commonsmodels.exceptions.ApiConnectionException;
+import com.commonsmodels.exceptions.InvalidRequestApiException;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;

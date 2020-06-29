@@ -1,4 +1,4 @@
-package com.macetasontivero.core.mappers.common;
+package com.mappers.common;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.macetasontivero.core.commonsmodels.exceptions.SQLConnectionErrorException;
+import com.commonsmodels.exceptions.SQLConnectionErrorException;
 
 public abstract class CommonMapper {
 
