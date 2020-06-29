@@ -9,6 +9,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import com.commonsmodels.exceptions.SQLConnectionErrorException;
+import com.mysql.jdbc.Driver;
 
 @PropertySource("classpath:db.properties")
 @Component
@@ -27,6 +28,7 @@ public class ConnectionManager {
 
 	public Connection getConnection() {
 		try {
+			DriverManager.registerDriver(new Driver());
 			conn = DriverManager.getConnection(url, user, password);
 		} catch (SQLException e) {
 			System.out.println(e);
