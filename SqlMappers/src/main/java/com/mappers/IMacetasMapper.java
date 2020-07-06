@@ -11,6 +11,8 @@ public interface IMacetasMapper {
 
 	public List<Maceta> getListado(Connection conn);
 
+	public List<Maceta> getListadoPrecios(Connection conn);
+
 	public List<FormatoMaceta> getFormatos(Connection conn);
 
 	public List<Maceta> getListaByFormato(Connection conn, FormatoMaceta formato);

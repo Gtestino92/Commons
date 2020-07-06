@@ -34,12 +34,17 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 
 	@Override
 	public List<Maceta> getListado(Connection conn) {
-		String query = "SELECT * FROM lista_macetas WHERE " + ESTADO + " = 'A'";
-		String[] paramsIn = new String[] {};
 		String[] outKeys = new String[] { CODIGO, PRECIO, LARGO, ANCHO, ALTO, CAPACIDAD, STOCK, CODIGO_NUEVO,
 				LINKS_FOTOS, FORMATO, CANT_IMG_STATIC };
-		List<HashMap<String, String>> listMacetasMap = executeQuery(conn, query, paramsIn, outKeys);
+		List<HashMap<String, String>> listMacetasMap = getHashListaByOutKeys(conn, outKeys);
 		return getListMacetasByListMap(listMacetasMap);
+	}
+
+	@Override
+	public List<Maceta> getListadoPrecios(Connection conn) {
+		String[] outKeys = new String[] { CODIGO, PRECIO, CODIGO_NUEVO, FORMATO };
+		List<HashMap<String, String>> listMacetasMap = getHashListaByOutKeys(conn, outKeys);
+		return getListPreciosMacetasByListMap(listMacetasMap);
 	}
 
 	@Override
@@ -187,6 +192,26 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 			}
 		}
 		return fotosStatic;
+	}
+
+	private List<Maceta> getListPreciosMacetasByListMap(List<HashMap<String, String>> listMacetasMap) {
+		List<Maceta> listaMacetas = new ArrayList<>();
+		for (HashMap<String, String> macetaHash : listMacetasMap) {
+
+			String codigo = macetaHash.get(CODIGO);
+			BigDecimal precio = new BigDecimal(macetaHash.get(PRECIO));
+			String codigoNew = macetaHash.get(CODIGO_NUEVO);
+			FormatoMaceta formato = FormatoMaceta.getFormatoByCode(macetaHash.get(FORMATO));
+			listaMacetas
+					.add(Maceta.builder().codigo(codigo).codigoNew(codigoNew).precio(precio).formato(formato).build());
+		}
+		return listaMacetas;
+	}
+
+	public List<HashMap<String, String>> getHashListaByOutKeys(Connection conn, String[] outKeys) {
+		String query = "SELECT * FROM lista_macetas WHERE " + ESTADO + " = 'A'";
+		String[] paramsIn = new String[] {};
+		return executeQuery(conn, query, paramsIn, outKeys);
 	}
 
 }
