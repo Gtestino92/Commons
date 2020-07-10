@@ -1,5 +1,6 @@
 package com.mongo.services.impl;
 
+import static com.mongo.utils.DateUtils.getDateCorrectGMT;
 import static com.mongodb.client.model.Updates.set;
 
 import java.text.ParseException;
@@ -114,7 +115,7 @@ public class PedidosService implements IPedidosService {
 
 	@Override
 	public void setPedidoAsEntregado(MongoDatabase mongoDb, Long idPedido) {
-		Date fechaHoy = new Date();
+		Date fechaHoy = getDateCorrectGMT();
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		Bson filter = Filters.eq(ID_PEDIDO, idPedido.toString());
 		Bson updateOperationFecha = set(FECHA_ENTREGA, formatter.format(fechaHoy));

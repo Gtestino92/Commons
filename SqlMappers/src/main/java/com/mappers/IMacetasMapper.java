@@ -28,4 +28,6 @@ public interface IMacetasMapper {
 	public void eliminarModelo(Connection conn, String codigoNew);
 
 	public boolean modeloExiste(Connection conn, String codigoNew);
+
+	public void modificarPrecios(Connection conn, List<Maceta> macetasModifPrecios);
 }

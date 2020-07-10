@@ -47,7 +47,7 @@ public abstract class CommonMapper {
 			loadParameters(ps, query, paramsIn);
 			ps.executeUpdate();
 			ps.close();
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new SQLConnectionErrorException("Error al ejecutar update");
 		}
 
@@ -59,7 +59,7 @@ public abstract class CommonMapper {
 			String key = outKeys[i];
 			try {
 				map.put(key, rs.getString(key));
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				System.out.println("Error al obtener parametro " + key);
 				throw e;
 			}

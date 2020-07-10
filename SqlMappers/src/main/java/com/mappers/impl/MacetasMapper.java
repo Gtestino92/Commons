@@ -138,6 +138,15 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 		return result != null;
 	}
 
+	@Override
+	public void modificarPrecios(Connection conn, List<Maceta> macetasModifPrecios) {
+		for (Maceta maceta : macetasModifPrecios) {
+			String query = "UPDATE lista_macetas SET " + PRECIO + " = ? WHERE " + CODIGO_NUEVO + " = ?";
+			String[] paramsIn = new String[] { maceta.getPrecio().toString(), maceta.getCodigoNew() };
+			executeUpdate(conn, query, paramsIn);
+		}
+	}
+
 	private static List<Maceta> getListMacetasByListMap(List<HashMap<String, String>> listMacetasMap) {
 		List<Maceta> listaMacetas = new ArrayList<>();
 		for (HashMap<String, String> macetaHash : listMacetasMap) {
