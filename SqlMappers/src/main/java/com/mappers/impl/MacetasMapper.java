@@ -142,8 +142,9 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 	@Override
 	public void modificarPrecios(Connection conn, List<Maceta> macetasModifPrecios) {
 		for (Maceta maceta : macetasModifPrecios) {
-			String query = "UPDATE lista_macetas SET " + PRECIO + " = ? WHERE " + CODIGO_NUEVO + " = ?";
-			String[] paramsIn = new String[] { maceta.getPrecio().toString(), maceta.getCodigoNew() };
+			String query = "UPDATE lista_macetas SET " + PRECIO + " = ?, " + PRECIO_ANTERIOR + " = ?  WHERE "
+					+ CODIGO_NUEVO + " = ?";
+			String[] paramsIn = new String[] { maceta.getPrecio().toString(), maceta.getPrecioAnterior().toString(), maceta.getCodigoNew() };
 			executeUpdate(conn, query, paramsIn);
 		}
 	}
