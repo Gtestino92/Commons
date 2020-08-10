@@ -14,6 +14,7 @@ public class Maceta {
 	private String codigo;
 	private String codigoNew;
 	private BigDecimal precio;
+	private BigDecimal precioAnterior;
 	private BigDecimal alto;
 	private BigDecimal ancho;
 	private Integer capacidad;

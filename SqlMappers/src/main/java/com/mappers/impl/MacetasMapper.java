@@ -22,6 +22,7 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 	private static final String CAPACIDAD = "CAPACIDAD";
 	private static final String CODIGO = "CODIGO";
 	private static final String PRECIO = "PRECIO";
+	private static final String PRECIO_ANTERIOR = "PRECIO_ANTERIOR";
 	private static final String ANCHO = "ANCHO";
 	private static final String ALTO = "ALTO";
 	private static final String LARGO = "LARGO";
@@ -42,7 +43,7 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 
 	@Override
 	public List<Maceta> getListadoPrecios(Connection conn) {
-		String[] outKeys = new String[] { CODIGO, PRECIO, CODIGO_NUEVO, FORMATO };
+		String[] outKeys = new String[] { CODIGO, PRECIO, PRECIO_ANTERIOR, CODIGO_NUEVO, FORMATO };
 		List<HashMap<String, String>> listMacetasMap = getHashListaByOutKeys(conn, outKeys);
 		return getListPreciosMacetasByListMap(listMacetasMap);
 	}
@@ -209,10 +210,11 @@ public class MacetasMapper extends CommonMapper implements IMacetasMapper {
 
 			String codigo = macetaHash.get(CODIGO);
 			BigDecimal precio = new BigDecimal(macetaHash.get(PRECIO));
+			BigDecimal precioAnterior = new BigDecimal(macetaHash.get(PRECIO_ANTERIOR));
 			String codigoNew = macetaHash.get(CODIGO_NUEVO);
 			FormatoMaceta formato = FormatoMaceta.getFormatoByCode(macetaHash.get(FORMATO));
-			listaMacetas
-					.add(Maceta.builder().codigo(codigo).codigoNew(codigoNew).precio(precio).formato(formato).build());
+			listaMacetas.add(Maceta.builder().codigo(codigo).codigoNew(codigoNew).precio(precio)
+					.precioAnterior(precioAnterior).formato(formato).build());
 		}
 		return listaMacetas;
 	}

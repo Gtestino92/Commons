@@ -35,7 +35,7 @@ public abstract class CommonMapper {
 			}
 			ps.close();
 			rs.close();
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new SQLConnectionErrorException("Error al conectarse con la B/D");
 		}
 		return result;
@@ -53,7 +53,7 @@ public abstract class CommonMapper {
 
 	}
 
-	private static HashMap<String, String> getMapFromResultSet(ResultSet rs, String[] outKeys) throws SQLException {
+	private static HashMap<String, String> getMapFromResultSet(ResultSet rs, String[] outKeys) throws Exception {
 		HashMap<String, String> map = new HashMap<>();
 		for (int i = 0; i < outKeys.length; i++) {
 			String key = outKeys[i];
@@ -67,7 +67,7 @@ public abstract class CommonMapper {
 		return map;
 	}
 
-	private static void loadParameters(PreparedStatement ps, String query, Object[] params) {
+	private static void loadParameters(PreparedStatement ps, String query, Object[] params) throws Exception {
 		if (params.length == 0)
 			return;
 		else {
@@ -81,6 +81,7 @@ public abstract class CommonMapper {
 				} catch (SQLException e) {
 					System.out.println("Error al insertar parametro " + params[i] + "al query.");
 					e.printStackTrace();
+					throw e;
 				}
 			}
 		}
