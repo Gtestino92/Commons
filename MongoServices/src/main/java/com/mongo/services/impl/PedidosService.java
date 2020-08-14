@@ -43,7 +43,8 @@ public class PedidosService implements IPedidosService {
 	private static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
 	@Override
-	public List<Pedido> getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado) throws ParseException {
+	public List<Pedido> getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado, Date fechaSolicitudDesde,
+			Date fechaSolicitudHasta, Date fechaEntregaDesde, Date fechaEntregaHasta) throws ParseException {
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
 		List<Pedido> pedidos = new ArrayList<>();
