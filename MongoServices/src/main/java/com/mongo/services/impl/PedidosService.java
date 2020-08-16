@@ -89,12 +89,10 @@ public class PedidosService implements IPedidosService {
 		pedidoInfoDocument.append(NOMBRE, pedido.getNombre());
 		pedidoInfoDocument.append(ESTADO_PEDIDO, pedido.getEstadoPedido().getCode());
 		pedidoInfoDocument.append(TOTAL, pedido.getTotal().toString());
-		if (pedido.getEstadoPedido().equals(EstadoPedido.PENDIENTE))
-			pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
-		else {
-			pedidoInfoDocument.append(FECHA_ENTREGA, formatter.format(pedido.getFechaEntrega()));
-			pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
-		}
+		pedidoInfoDocument.append(FECHA_SOLICITUD, pedido.getFechaSolicitud());
+		if (pedido.getEstadoPedido().equals(EstadoPedido.ENTREGADO))
+			pedidoInfoDocument.append(FECHA_ENTREGA, pedido.getFechaEntrega());
+		
 		pedidosInfoCollection.insertOne(pedidoInfoDocument);
 
 		Document pedidoDocument = new Document();
@@ -178,7 +176,7 @@ public class PedidosService implements IPedidosService {
 		pedidoInfoDocument.append(NOMBRE, pedido.getNombre());
 		pedidoInfoDocument.append(ESTADO_PEDIDO, pedido.getEstadoPedido().getCode());
 		pedidoInfoDocument.append(TOTAL, pedido.getTotal().toString());
-		pedidoInfoDocument.append(FECHA_SOLICITUD, formatter.format(pedido.getFechaSolicitud()));
+		pedidoInfoDocument.append(FECHA_SOLICITUD, pedido.getFechaSolicitud());
 		pedidosInfoCollection.insertOne(pedidoInfoDocument);
 
 		Document pedidoDocument = new Document();

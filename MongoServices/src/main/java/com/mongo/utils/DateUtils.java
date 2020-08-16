@@ -9,6 +9,7 @@ public class DateUtils {
 	public static Date getDateCorrectGMT() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
+		calendar.add(Calendar.HOUR_OF_DAY, -3);
 		calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
 		calendar.setTimeZone(TimeZone.getTimeZone("America/Buenos_Aires"));
 		return calendar.getTime();
