@@ -4,7 +4,6 @@ import static com.mongo.utils.DateUtils.getDateCorrectGMT;
 import static com.mongodb.client.model.Updates.set;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -20,6 +19,9 @@ import com.commonsmodels.models.EstadoPedido;
 import com.commonsmodels.models.Maceta;
 import com.commonsmodels.models.Pedido;
 import com.mongo.services.IPedidosService;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -40,8 +42,6 @@ public class PedidosService implements IPedidosService {
 	private static final String FECHA_SOLICITUD = "fecha_solicitud";
 	private static final String FECHA_ENTREGA = "fecha_entrega";
 
-	private static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
 	@Override
 	public List<Pedido> getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado, Date fechaSolicitudDesde,
 			Date fechaSolicitudHasta, Date fechaEntregaDesde, Date fechaEntregaHasta) throws ParseException {
@@ -49,7 +49,11 @@ public class PedidosService implements IPedidosService {
 		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
 		List<Pedido> pedidos = new ArrayList<>();
 
-		MongoCursor<Document> cursorInfo = pedidosInfoCollection.find(Filters.eq(ESTADO_PEDIDO, estado.getCode()))
+		MongoCursor<Document> cursorInfo = pedidosInfoCollection
+				.find(Filters.and(Filters.eq(ESTADO_PEDIDO, estado.getCode()),
+						Filters.gte(FECHA_SOLICITUD, fechaSolicitudDesde),
+						Filters.lte(FECHA_SOLICITUD, fechaSolicitudHasta)))
+				.sort(new BasicDBObject(FECHA_SOLICITUD, -1))
 				.iterator();
 		while (cursorInfo.hasNext()) {
 			Document infoDoc = cursorInfo.next();
@@ -62,13 +66,9 @@ public class PedidosService implements IPedidosService {
 			List<Maceta> listaPedido = getListadoFromPedidoDoc(pedidoListaDoc);
 			Pedido pedido = Pedido.builder().nombre(nombre).celular(celular).mail(mail).total(total).idPedido(idPedido)
 					.listadoMacetas(listaPedido).estadoPedido(estado).build();
-			try {
-				pedido.setFechaSolicitud(formatter.parse(infoDoc.getString(FECHA_SOLICITUD)));
-				if (EstadoPedido.ENTREGADO.equals(estado))
-					pedido.setFechaEntrega(formatter.parse(infoDoc.getString(FECHA_ENTREGA)));
-			} catch (ParseException e) {
-				throw e;
-			}
+			pedido.setFechaSolicitud((Date) infoDoc.get(FECHA_SOLICITUD));
+			if (EstadoPedido.ENTREGADO.equals(estado))
+				pedido.setFechaEntrega((Date) infoDoc.get(FECHA_ENTREGA));
 			pedidos.add(pedido);
 		}
 
@@ -92,7 +92,7 @@ public class PedidosService implements IPedidosService {
 		pedidoInfoDocument.append(FECHA_SOLICITUD, pedido.getFechaSolicitud());
 		if (pedido.getEstadoPedido().equals(EstadoPedido.ENTREGADO))
 			pedidoInfoDocument.append(FECHA_ENTREGA, pedido.getFechaEntrega());
-		
+
 		pedidosInfoCollection.insertOne(pedidoInfoDocument);
 
 		Document pedidoDocument = new Document();
@@ -117,7 +117,7 @@ public class PedidosService implements IPedidosService {
 		Date fechaHoy = getDateCorrectGMT();
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		Bson filter = Filters.eq(ID_PEDIDO, idPedido.toString());
-		Bson updateOperationFecha = set(FECHA_ENTREGA, formatter.format(fechaHoy));
+		Bson updateOperationFecha = set(FECHA_ENTREGA, fechaHoy);
 		Bson updateOperationEstado = set(ESTADO_PEDIDO, EstadoPedido.ENTREGADO.getCode());
 		pedidosInfoCollection.updateOne(filter, updateOperationFecha);
 		pedidosInfoCollection.updateOne(filter, updateOperationEstado);
