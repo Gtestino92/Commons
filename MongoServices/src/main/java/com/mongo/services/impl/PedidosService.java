@@ -20,8 +20,6 @@ import com.commonsmodels.models.Maceta;
 import com.commonsmodels.models.Pedido;
 import com.mongo.services.IPedidosService;
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -48,13 +46,20 @@ public class PedidosService implements IPedidosService {
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
 		List<Pedido> pedidos = new ArrayList<>();
+		Bson filter;
+		if (EstadoPedido.ENTREGADO.equals(estado))
+			filter = Filters.and(Filters.eq(ESTADO_PEDIDO, estado.getCode()),
+					Filters.gte(FECHA_SOLICITUD, fechaSolicitudDesde),
+					Filters.lte(FECHA_SOLICITUD, fechaSolicitudHasta), Filters.gte(FECHA_ENTREGA, fechaEntregaDesde),
+					Filters.lte(FECHA_ENTREGA, fechaEntregaHasta));
+		else
+			filter = Filters.and(Filters.eq(ESTADO_PEDIDO, estado.getCode()),
+					Filters.gte(FECHA_SOLICITUD, fechaSolicitudDesde),
+					Filters.lte(FECHA_SOLICITUD, fechaSolicitudHasta));
 
-		MongoCursor<Document> cursorInfo = pedidosInfoCollection
-				.find(Filters.and(Filters.eq(ESTADO_PEDIDO, estado.getCode()),
-						Filters.gte(FECHA_SOLICITUD, fechaSolicitudDesde),
-						Filters.lte(FECHA_SOLICITUD, fechaSolicitudHasta)))
-				.sort(new BasicDBObject(FECHA_SOLICITUD, -1))
-				.iterator();
+		MongoCursor<Document> cursorInfo = pedidosInfoCollection.find(filter)
+				.sort(new BasicDBObject(FECHA_SOLICITUD, -1)).iterator();
+
 		while (cursorInfo.hasNext()) {
 			Document infoDoc = cursorInfo.next();
 			String celular = infoDoc.getString(CELULAR);
