@@ -15,6 +15,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.stereotype.Component;
 
+import com.commonsmodels.models.BodyPedidosFront;
 import com.commonsmodels.models.EstadoPedido;
 import com.commonsmodels.models.Maceta;
 import com.commonsmodels.models.Pedido;
@@ -39,10 +40,13 @@ public class PedidosService implements IPedidosService {
 	private static final String ID_DEFAULT_MONGO = "_id";
 	private static final String FECHA_SOLICITUD = "fecha_solicitud";
 	private static final String FECHA_ENTREGA = "fecha_entrega";
+	private static final Integer CANT_PEDIDOS = 2;
 
 	@Override
-	public List<Pedido> getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado, Date fechaSolicitudDesde,
-			Date fechaSolicitudHasta, Date fechaEntregaDesde, Date fechaEntregaHasta) throws ParseException {
+	public BodyPedidosFront getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado, Date fechaSolicitudDesde,
+			Date fechaSolicitudHasta, Date fechaEntregaDesde, Date fechaEntregaHasta, Integer countFrom,
+			Boolean isNotFilt) throws ParseException {
+		Boolean noMorePedidosLeft = Boolean.FALSE;
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
 		List<Pedido> pedidos = new ArrayList<>();
@@ -59,8 +63,13 @@ public class PedidosService implements IPedidosService {
 
 		MongoCursor<Document> cursorInfo = pedidosInfoCollection.find(filter)
 				.sort(new BasicDBObject(FECHA_SOLICITUD, -1)).iterator();
-
-		while (cursorInfo.hasNext()) {
+		int i = 0;
+		if (isNotFilt) {
+			for (i = 0; i < countFrom; i++)
+				cursorInfo.next();
+		}
+		while ((cursorInfo.hasNext() && (isNotFilt && i < countFrom + CANT_PEDIDOS))
+				|| cursorInfo.hasNext() && (!isNotFilt)) {
 			Document infoDoc = cursorInfo.next();
 			String celular = infoDoc.getString(CELULAR);
 			String mail = infoDoc.getString(MAIL);
@@ -75,9 +84,12 @@ public class PedidosService implements IPedidosService {
 			if (EstadoPedido.ENTREGADO.equals(estado))
 				pedido.setFechaEntrega((Date) infoDoc.get(FECHA_ENTREGA));
 			pedidos.add(pedido);
+			i++;
 		}
 
-		return pedidos;
+		if (!isNotFilt || (i == countFrom) || (i < countFrom + CANT_PEDIDOS))
+			noMorePedidosLeft = Boolean.TRUE;
+		return BodyPedidosFront.builder().pedidos(pedidos).noMorePedidosLeft(noMorePedidosLeft).build();
 	}
 
 	@Override
