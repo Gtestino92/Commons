@@ -40,7 +40,7 @@ public class PedidosService implements IPedidosService {
 	private static final String ID_DEFAULT_MONGO = "_id";
 	private static final String FECHA_SOLICITUD = "fecha_solicitud";
 	private static final String FECHA_ENTREGA = "fecha_entrega";
-	private static final Integer CANT_PEDIDOS = 2;
+	private static final Integer CANT_PEDIDOS = 5;
 
 	@Override
 	public BodyPedidosFront getPedidosByEstado(MongoDatabase mongoDb, EstadoPedido estado, Date fechaSolicitudDesde,
@@ -87,7 +87,7 @@ public class PedidosService implements IPedidosService {
 			i++;
 		}
 
-		if (!isNotFilt || (i == countFrom) || (i < countFrom + CANT_PEDIDOS))
+		if (!isNotFilt || (i == countFrom) || (i <= countFrom + CANT_PEDIDOS && !cursorInfo.hasNext()))
 			noMorePedidosLeft = Boolean.TRUE;
 		return BodyPedidosFront.builder().pedidos(pedidos).noMorePedidosLeft(noMorePedidosLeft).build();
 	}
