@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -74,21 +73,30 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		return makePedidosDataGraph(response);
 	}
 
+	@SuppressWarnings("unchecked")
 	private PedidosEntregadosGraph makePedidosDataGraph(String response) {
 		JSONObject dataResp = JsonGenerator.convertStringToObject(response);
 		List<FormatoGraph> formatosGraph = new ArrayList<>();
-		for (FormatoMaceta formato : FormatoMaceta.values()) {
+		for (int i = 0; i < FormatoMaceta.values().length; i++) {
+			FormatoMaceta formato = FormatoMaceta.values()[i];
+			List<Integer> values = new ArrayList<>();
 			if (dataResp.containsKey(formato.getCode())) {
-				formatosGraph.add(FormatoGraph.builder().formato(formato)
-						.values(Arrays.asList((Integer[]) dataResp.get(formato.getCode()))).build());
+				Iterator<Integer> iterator = JsonGenerator
+						.convertStringToJSONArray(dataResp.get(formato.getCode()).toString()).iterator();
+				while (iterator.hasNext()) {
+					Object cant = iterator.next();
+					values.add(Integer.parseInt(cant.toString()));
+				}
+				formatosGraph.add(FormatoGraph.builder().formato(formato).values(values).build());
 			}
 		}
 
-		List<String> fechasStr = Arrays.asList((String[]) dataResp.get("fechas"));
+		Iterator<String> iteratorFechas = JsonGenerator.convertStringToJSONArray(dataResp.get("fechas").toString())
+				.iterator();
 		List<Date> fechas = new ArrayList<>();
-		for (String fechaStr : fechasStr) {
+		while (iteratorFechas.hasNext()) {
 			try {
-				fechas.add(formatter.parse(fechaStr));
+				fechas.add(formatter.parse(iteratorFechas.next().toString()));
 			} catch (ParseException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e);
