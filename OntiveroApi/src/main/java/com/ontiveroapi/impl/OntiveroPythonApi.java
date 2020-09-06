@@ -3,19 +3,27 @@ package com.ontiveroapi.impl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.commonsmodels.json.JsonGenerator;
+import com.commonsmodels.models.FormatoGraph;
+import com.commonsmodels.models.FormatoMaceta;
 import com.commonsmodels.models.Maceta;
 import com.commonsmodels.models.Pedido;
+import com.commonsmodels.models.PedidosEntregadosGraph;
 import com.ontiveroapi.IOntiveroPythonApi;
 import com.ontiveroapi.common.CommonApiConnector;
 
@@ -31,6 +39,8 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 
 	@Value("${api.url}")
 	private String baseUrl;
+
+	private static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
 	@Override
 	public List<Maceta> getRecomendaciones(Pedido pedidoSolicitado) {
@@ -57,6 +67,36 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		return makeCallStrResponse(request);
 	}
 
+	@Override
+	public PedidosEntregadosGraph getPedidosEntregadosDB() {
+		Request request = new Request.Builder().url(baseUrl + "/getPedidosEntregadosDb").build();
+		String response = makeCallStrResponse(request);
+		return makePedidosDataGraph(response);
+	}
+
+	private PedidosEntregadosGraph makePedidosDataGraph(String response) {
+		JSONObject dataResp = JsonGenerator.convertStringToObject(response);
+		List<FormatoGraph> formatosGraph = new ArrayList<>();
+		for (FormatoMaceta formato : FormatoMaceta.values()) {
+			if (dataResp.containsKey(formato.getCode())) {
+				formatosGraph.add(FormatoGraph.builder().formato(formato)
+						.values(Arrays.asList((Integer[]) dataResp.get(formato.getCode()))).build());
+			}
+		}
+
+		List<String> fechasStr = Arrays.asList((String[]) dataResp.get("fechas"));
+		List<Date> fechas = new ArrayList<>();
+		for (String fechaStr : fechasStr) {
+			try {
+				fechas.add(formatter.parse(fechaStr));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
+		return PedidosEntregadosGraph.builder().dataByFormato(formatosGraph).fechas(fechas).build();
+	}
+
 	@SuppressWarnings("unchecked")
 	private List<Maceta> getListadoRecomendaciones(String makeCallStrResponse) {
 		JSONArray listCodigos = JsonGenerator.convertStringToJSONArray(makeCallStrResponse);
@@ -81,4 +121,5 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		}
 		return file;
 	}
+
 }
