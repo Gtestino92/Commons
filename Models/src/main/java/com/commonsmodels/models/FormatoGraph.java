@@ -9,5 +9,6 @@ import lombok.Getter;
 @Getter
 public class FormatoGraph {
 	private FormatoMaceta formato;
+	private ColorGraph colorGraph;
 	private List<Integer> values;
 }

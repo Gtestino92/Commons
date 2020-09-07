@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.commonsmodels.json.JsonGenerator;
+import com.commonsmodels.models.ColorGraph;
 import com.commonsmodels.models.FormatoGraph;
 import com.commonsmodels.models.FormatoMaceta;
 import com.commonsmodels.models.Maceta;
@@ -87,7 +88,8 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 					Object cant = iterator.next();
 					values.add(Integer.parseInt(cant.toString()));
 				}
-				formatosGraph.add(FormatoGraph.builder().formato(formato).values(values).build());
+				formatosGraph.add(FormatoGraph.builder().formato(formato)
+						.colorGraph(ColorGraph.getColorByCodMaceta(formato.getCode())).values(values).build());
 			}
 		}
 
