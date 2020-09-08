@@ -6,7 +6,7 @@ import java.util.Map;
 
 public enum ColorGraph {
 
-	MARRON("OVA", 102, 51, 0), ROJO("REC", 255, 36, 0), BLANCO("CAS", 243, 243, 243), MARRON_CL("BSQ", 153, 76, 0),
+	MARRON("OVA", 102, 51, 0), ROJO("REC", 255, 36, 0), BLANCO("CAS", 243, 243, 243), MARRON_CL("BSQ", 183, 76, 0),
 	VERDE_CL("RED", 102, 255, 102), AZUL("OCT", 51, 51, 255), AMARILLO("SQR", 255, 255, 51),
 	VERDE_OSC("HEX", 0, 102, 0), NEGRO("OTR", 10, 10, 10), CELESTE("LAG", 0, 245, 245), GRIS("GRS", 96, 96, 96);
 
