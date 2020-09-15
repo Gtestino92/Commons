@@ -9,7 +9,7 @@ public abstract class ApiReqHandler<T, Y> {
 			Y result = execute(body);
 			return result;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw e;
 		}
 	}
 }

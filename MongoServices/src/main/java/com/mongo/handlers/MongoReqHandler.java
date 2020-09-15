@@ -17,7 +17,7 @@ public abstract class MongoReqHandler<T, Y> {
 			Y result = execute(mongoConnMgr.getDatabase(), body);
 			return result;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw e;
 		} finally {
 			mongoConnMgr.closeConnection();
 		}
