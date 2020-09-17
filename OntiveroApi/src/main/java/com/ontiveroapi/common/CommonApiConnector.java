@@ -19,6 +19,8 @@ public abstract class CommonApiConnector {
 		String strResponse = "";
 		Response response = null;
 		try {
+			System.out.println("Se realiza llamado http a API");
+			System.out.println(request);
 			response = httpClient.newCall(request).execute();
 			if (!response.isSuccessful())
 				throw new InvalidRequestApiException("Error en la consulta a la API", response.code());
@@ -27,7 +29,7 @@ public abstract class CommonApiConnector {
 			MediaType contentType = body.contentType();
 			return response.newBuilder().body(ResponseBody.create(contentType, strResponse)).build().body().string();
 		} catch (IOException e) {
-			throw new ApiConnectionException("Error de conexión con la API");
+			throw new ApiConnectionException("Error de conexión con la API", e);
 		}
 	}
 }
