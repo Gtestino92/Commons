@@ -2,19 +2,18 @@ package com.commonsmodels.exceptions;
 
 public class ApiConnectionException extends RuntimeException {
 
-	private static final long serialVersionUID = 4339671021065850838L;
-	private Exception exceptionOrig;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6333415927398790139L;
+	private final String typeError;
 
-	public ApiConnectionException(String message) {
+	public ApiConnectionException(String typeError, String message) {
 		super(message);
+		this.typeError = typeError;
 	}
 
-	public ApiConnectionException(String message, Exception e) {
-		super(message);
-		this.exceptionOrig = e;
-	}
-
-	public Exception getExceptionOrig() {
-		return this.exceptionOrig;
+	public String getTypeError() {
+		return typeError;
 	}
 }

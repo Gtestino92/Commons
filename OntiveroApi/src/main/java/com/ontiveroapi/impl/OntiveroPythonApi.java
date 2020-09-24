@@ -3,6 +3,7 @@ package com.ontiveroapi.impl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import com.commonsmodels.json.JsonGenerator;
 import com.commonsmodels.models.ColorGraph;
 import com.commonsmodels.models.FormatoGraph;
 import com.commonsmodels.models.FormatoMaceta;
+import com.commonsmodels.models.FormatoPredictGraph;
 import com.commonsmodels.models.Maceta;
 import com.commonsmodels.models.Pedido;
 import com.commonsmodels.models.PedidosEntregadosGraph;
@@ -51,8 +53,9 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 			formBody.add("cantSolicitada" + i, listado.get(i).getCantSolicitada().toString());
 		}
 		formBody.add("cantModelos", Integer.toString(listado.size()));
-		Request request = new Request.Builder().url(baseUrl + "/getRecomendaciones").post(formBody.build()).build();
-		return getListadoRecomendaciones(makeCallStrResponse(request));
+		Request request = new Request.Builder().url(baseUrl + "/getRecomendaciones").post(formBody.build())
+				.header("isRest", "S").build();
+		return makeListadoRecomendaciones(makeCallStrResponse(request));
 	}
 
 	@Override
@@ -63,13 +66,32 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 				.addFormDataPart("pedidosEntregados", fileName,
 						RequestBody.create(MediaType.parse("application/octet-stream"), file))
 				.build();
-		Request request = new Request.Builder().url(baseUrl + "/pedidosEntregadosML").post(requestBody).build();
+		Request request = new Request.Builder().url(baseUrl + "/pedidosEntregadosML").post(requestBody)
+				.header("isRest", "S").build();
 		return makeCallStrResponse(request);
 	}
 
 	@Override
+	public List<FormatoPredictGraph> getPrediccionesByFormato(Date fechaPredict, PedidosEntregadosGraph pedidos) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<FormatoPredictGraph> getPrediccionesByFormatoMock(Date fechaPredict, PedidosEntregadosGraph pedidos) {
+		List<FormatoPredictGraph> dataByFormato = new ArrayList<>();
+		Integer val = 1;
+		for (FormatoMaceta formato : FormatoMaceta.values()) {
+			dataByFormato.add(FormatoPredictGraph.builder().value(new BigDecimal(val++)).varianza(new BigDecimal(3))
+					.formato(formato).colorGraph(ColorGraph.getColorByCodMaceta(formato.getCode())).build());
+		}
+		return dataByFormato;
+	}
+
+	@Override
 	public PedidosEntregadosGraph getPedidosEntregadosDB() {
-		Request request = new Request.Builder().url(baseUrl + "/getPedidosEntregadosDb").build();
+		Request request = new Request.Builder().url(baseUrl + "/getPedidosEntregadosDb").addHeader("isRest", "N")
+				.build();
 		String response = makeCallStrResponse(request);
 		return makePedidosDataGraph(response);
 	}
@@ -108,7 +130,7 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Maceta> getListadoRecomendaciones(String makeCallStrResponse) {
+	private List<Maceta> makeListadoRecomendaciones(String makeCallStrResponse) {
 		JSONArray listCodigos = JsonGenerator.convertStringToJSONArray(makeCallStrResponse);
 		List<Maceta> macetas = new ArrayList<>();
 		Iterator<String> iterator = listCodigos.iterator();

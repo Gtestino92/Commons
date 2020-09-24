@@ -3,6 +3,7 @@ package com.ontiveroapi.common;
 import java.io.IOException;
 
 import com.commonsmodels.exceptions.ApiConnectionException;
+import com.commonsmodels.exceptions.ApiConnectionRestException;
 import com.commonsmodels.exceptions.InvalidRequestApiException;
 
 import okhttp3.MediaType;
@@ -29,7 +30,10 @@ public abstract class CommonApiConnector {
 			MediaType contentType = body.contentType();
 			return response.newBuilder().body(ResponseBody.create(contentType, strResponse)).build().body().string();
 		} catch (IOException e) {
-			throw new ApiConnectionException("Error de conexión con la API", e);
+			if ("S".equals(request.header("isRest")))
+				throw new ApiConnectionRestException("Error de conexión con la API", e);
+			else
+				throw new ApiConnectionException("apiConnectError", "Error de conexión con la API");
 		}
 	}
 }
