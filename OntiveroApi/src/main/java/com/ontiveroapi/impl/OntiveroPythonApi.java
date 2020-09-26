@@ -72,13 +72,13 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 	}
 
 	@Override
-	public List<FormatoPredictGraph> getPrediccionesByFormato(Date fechaPredict, PedidosEntregadosGraph pedidos) {
+	public List<FormatoPredictGraph> getPrediccionesByFormato(List<FormatoGraph> pedidos) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<FormatoPredictGraph> getPrediccionesByFormatoMock(Date fechaPredict, PedidosEntregadosGraph pedidos) {
+	public List<FormatoPredictGraph> getPrediccionesByFormatoMock(List<FormatoGraph> pedidos) {
 		List<FormatoPredictGraph> dataByFormato = new ArrayList<>();
 		Integer val = 1;
 		for (FormatoMaceta formato : FormatoMaceta.values()) {
