@@ -11,5 +11,5 @@ public class FormatoPredictGraph {
 	private FormatoMaceta formato;
 	private ColorGraph colorGraph;
 	private BigDecimal value;
-	private BigDecimal varianza;
+	private BigDecimal stdDev;
 }
