@@ -82,7 +82,7 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 		List<FormatoPredictGraph> dataByFormato = new ArrayList<>();
 		Integer val = 1;
 		for (FormatoMaceta formato : FormatoMaceta.values()) {
-			dataByFormato.add(FormatoPredictGraph.builder().value(new BigDecimal(val++)).varianza(new BigDecimal(3))
+			dataByFormato.add(FormatoPredictGraph.builder().value(new BigDecimal(val++)).stdDev(new BigDecimal(10))
 					.formato(formato).colorGraph(ColorGraph.getColorByCodMaceta(formato.getCode())).build());
 		}
 		return dataByFormato;
