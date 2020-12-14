@@ -39,6 +39,8 @@ import okhttp3.RequestBody;
 @Component
 public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPythonApi {
 
+	private static final String TOKEN = "token";
+
 	@Value("${api.url}")
 	private String baseUrl;
 
@@ -89,11 +91,23 @@ public class OntiveroPythonApi extends CommonApiConnector implements IOntiveroPy
 	}
 
 	@Override
-	public PedidosEntregadosGraph getPedidosEntregadosDB() {
+	public PedidosEntregadosGraph getPedidosEntregadosDB(String token) {
 		Request request = new Request.Builder().url(baseUrl + "/getPedidosEntregadosDb").addHeader("isRest", "N")
-				.build();
+				.addHeader("access-token", token).build();
 		String response = makeCallStrResponse(request);
 		return makePedidosDataGraph(response);
+	}
+
+	@Override
+	public String getToken(String user) {
+		Request request = new Request.Builder().url(baseUrl + "/getToken?id=" + user).build();
+		String response = makeCallStrResponse(request);
+		return getTokenFromJson(response);
+	}
+
+	private String getTokenFromJson(String response) {
+		JSONObject dataResp = JsonGenerator.convertStringToObject(response);
+		return dataResp.get(TOKEN).toString();
 	}
 
 	@SuppressWarnings("unchecked")

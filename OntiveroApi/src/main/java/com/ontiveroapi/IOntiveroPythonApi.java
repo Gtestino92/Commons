@@ -16,9 +16,11 @@ public interface IOntiveroPythonApi {
 
 	public String getPedidosEntregadosML(MultipartFile filePedidosML);
 
-	public PedidosEntregadosGraph getPedidosEntregadosDB();
+	public PedidosEntregadosGraph getPedidosEntregadosDB(String token);
 
 	public List<FormatoPredictGraph> getPrediccionesByFormato(List<FormatoGraph> pedidos);
 
 	public List<FormatoPredictGraph> getPrediccionesByFormatoMock(List<FormatoGraph> pedidos);
+
+	public String getToken(String user);
 }
