@@ -35,7 +35,8 @@ public abstract class CommonApiConnector {
 			else
 				throw new ApiConnectionException("apiConnectError", "Error de conexión con la API");
 		} finally {
-			response.close();
+			if(response != null)
+				response.close();
 		}
 	}
 }
