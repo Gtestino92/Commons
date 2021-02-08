@@ -36,6 +36,7 @@ public abstract class CommonMapper {
 			ps.close();
 			rs.close();
 		} catch (Exception e) {
+			System.out.println(e);
 			throw new SQLConnectionErrorException("Error al conectarse con la B/D");
 		}
 		return result;
@@ -48,6 +49,7 @@ public abstract class CommonMapper {
 			ps.executeUpdate();
 			ps.close();
 		} catch (Exception e) {
+			System.out.println(e);
 			throw new SQLConnectionErrorException("Error al ejecutar update");
 		}
 

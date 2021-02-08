@@ -180,7 +180,7 @@ public class PedidosService implements IPedidosService {
 	}
 
 	@Override
-	public void insertPedido(MongoDatabase mongoDb, Pedido pedido) {
+	public Long insertPedido(MongoDatabase mongoDb, Pedido pedido) {
 		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
 		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
 
@@ -203,7 +203,7 @@ public class PedidosService implements IPedidosService {
 			pedidoDocument.append(modeloPedido.getCodigoNew(), modeloPedido.getCantSolicitada());
 		}
 		pedidosCollection.insertOne(pedidoDocument);
-
+		return idPedido;
 	}
 
 	private List<Maceta> getListadoFromPedidoDoc(Document pedidoListaDoc) {
