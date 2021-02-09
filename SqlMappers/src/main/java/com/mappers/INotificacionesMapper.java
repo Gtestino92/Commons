@@ -4,13 +4,13 @@ import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
-import com.commonsmodels.models.PedidoNotificacion;
+import com.commonsmodels.models.Notificacion;
 
 public interface INotificacionesMapper {
 
-	public List<PedidoNotificacion> getNotificaciones(Connection conn);
+	public List<Notificacion> getNotificaciones(Connection conn);
 
-	public List<PedidoNotificacion> getNotificacionesNuevas(Connection conn);
+	public List<Notificacion> getNotificacionesNuevas(Connection conn);
 
 	public void generarNotificacion(Connection conn, Long idPedido, Date fechaGen);
 

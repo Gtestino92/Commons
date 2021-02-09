@@ -29,4 +29,6 @@ public interface IPedidosService {
 	public boolean pedidoExiste(MongoDatabase mongoDb, Long idPedido, EstadoPedido estado);
 
 	public Long insertPedido(MongoDatabase mongoDb, Pedido pedido);
+
+	public Pedido getPedidoById(MongoDatabase mongoDb, Long idPedido);
 }

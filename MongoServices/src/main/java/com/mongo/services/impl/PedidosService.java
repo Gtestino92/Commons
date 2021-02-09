@@ -71,18 +71,10 @@ public class PedidosService implements IPedidosService {
 		while ((cursorInfo.hasNext() && (isNotFilt && i < countFrom + CANT_PEDIDOS))
 				|| cursorInfo.hasNext() && (!isNotFilt)) {
 			Document infoDoc = cursorInfo.next();
-			String celular = infoDoc.getString(CELULAR);
-			String mail = infoDoc.getString(MAIL);
-			String nombre = infoDoc.getString(NOMBRE);
-			Long total = Long.parseLong(infoDoc.getString(TOTAL));
-			Long idPedido = Long.parseLong(infoDoc.getString(ID_PEDIDO));
-			Document pedidoListaDoc = pedidosCollection.find(Filters.eq(ID_PEDIDO, idPedido.toString())).first();
-			List<Maceta> listaPedido = getListadoFromPedidoDoc(pedidoListaDoc);
-			Pedido pedido = Pedido.builder().nombre(nombre).celular(celular).mail(mail).total(total).idPedido(idPedido)
-					.listadoMacetas(listaPedido).estadoPedido(estado).build();
-			pedido.setFechaSolicitud((Date) infoDoc.get(FECHA_SOLICITUD));
-			if (EstadoPedido.ENTREGADO.equals(estado))
-				pedido.setFechaEntrega((Date) infoDoc.get(FECHA_ENTREGA));
+			Pedido pedido = getInfoPedidoFromDoc(infoDoc, estado);
+			Document pedidoListaDoc = pedidosCollection.find(Filters.eq(ID_PEDIDO, pedido.getIdPedido().toString()))
+					.first();
+			pedido.setListadoMacetas(getListadoFromPedidoDoc(pedidoListaDoc));
 			pedidos.add(pedido);
 			i++;
 		}
@@ -90,6 +82,20 @@ public class PedidosService implements IPedidosService {
 		if (!isNotFilt || (i == countFrom) || (i <= countFrom + CANT_PEDIDOS && !cursorInfo.hasNext()))
 			noMorePedidosLeft = Boolean.TRUE;
 		return BodyPedidosFront.builder().pedidos(pedidos).noMorePedidosLeft(noMorePedidosLeft).build();
+	}
+
+	private Pedido getInfoPedidoFromDoc(Document infoDoc, EstadoPedido estado) {
+		String celular = infoDoc.getString(CELULAR);
+		String mail = infoDoc.getString(MAIL);
+		String nombre = infoDoc.getString(NOMBRE);
+		Long total = Long.parseLong(infoDoc.getString(TOTAL));
+		Long idPedido = Long.parseLong(infoDoc.getString(ID_PEDIDO));
+		Pedido pedido = Pedido.builder().nombre(nombre).celular(celular).mail(mail).total(total).idPedido(idPedido)
+				.estadoPedido(estado).build();
+		pedido.setFechaSolicitud((Date) infoDoc.get(FECHA_SOLICITUD));
+		if (EstadoPedido.ENTREGADO.equals(estado))
+			pedido.setFechaEntrega((Date) infoDoc.get(FECHA_ENTREGA));
+		return pedido;
 	}
 
 	@Override
@@ -204,6 +210,18 @@ public class PedidosService implements IPedidosService {
 		}
 		pedidosCollection.insertOne(pedidoDocument);
 		return idPedido;
+	}
+
+	@Override
+	public Pedido getPedidoById(MongoDatabase mongoDb, Long idPedido) {
+		MongoCollection<Document> pedidosInfoCollection = mongoDb.getCollection(MONGODB_PEDIDOS_INFO);
+		MongoCollection<Document> pedidosCollection = mongoDb.getCollection(MONGODB_PEDIDOS);
+		Bson filter = Filters.eq(ID_PEDIDO, idPedido.toString());
+		Document infoDoc = pedidosInfoCollection.find(filter).first();
+		Document pedidoListaDoc = pedidosCollection.find(filter).first();
+		Pedido pedido = getInfoPedidoFromDoc(infoDoc, EstadoPedido.PENDIENTE);
+		pedido.setListadoMacetas(getListadoFromPedidoDoc(pedidoListaDoc));
+		return pedido;
 	}
 
 	private List<Maceta> getListadoFromPedidoDoc(Document pedidoListaDoc) {

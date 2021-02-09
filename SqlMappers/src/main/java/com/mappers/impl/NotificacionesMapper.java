@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.commonsmodels.models.Pedido;
-import com.commonsmodels.models.PedidoNotificacion;
+import com.commonsmodels.models.Notificacion;
 import com.mappers.INotificacionesMapper;
 import com.mappers.common.CommonMapper;
 
@@ -29,7 +29,7 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 	private Integer maxDiasNotif;
 
 	@Override
-	public List<PedidoNotificacion> getNotificaciones(Connection conn) {
+	public List<Notificacion> getNotificaciones(Connection conn) {
 		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN, FECHA_CHECK };
 		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
 				+ maxDiasNotif.toString() + " day ";
@@ -38,7 +38,7 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 	}
 
 	@Override
-	public List<PedidoNotificacion> getNotificacionesNuevas(Connection conn) {
+	public List<Notificacion> getNotificacionesNuevas(Connection conn) {
 		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN };
 		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
 				+ maxDiasNotif.toString() + " day AND FECHA_CHECK IS NULL";
@@ -60,9 +60,9 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 		executeUpdate(conn, query, paramsIn);
 	}
 
-	private List<PedidoNotificacion> getListNotificationsByListMap(
+	private List<Notificacion> getListNotificationsByListMap(
 			List<HashMap<String, String>> listNotificationsHash) {
-		List<PedidoNotificacion> listNotifications = new ArrayList<>();
+		List<Notificacion> listNotifications = new ArrayList<>();
 		for (HashMap<String, String> notifHash : listNotificationsHash) {
 			Long idPedido = Long.parseLong(notifHash.get(ID_PEDIDO));
 			Date fechaGen;
@@ -73,7 +73,7 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 			} catch (ParseException e) {
 				throw new RuntimeException(e);
 			}
-			listNotifications.add(PedidoNotificacion.builder().pedido(Pedido.builder().idPedido(idPedido).build())
+			listNotifications.add(Notificacion.builder().pedido(Pedido.builder().idPedido(idPedido).build())
 					.fechaGen(fechaGen).fechaCheck(fechaCheck).build());
 		}
 		return listNotifications;
