@@ -81,7 +81,7 @@ public abstract class CommonMapper {
 						ps.setBlob(i + 1, (InputStream) params[i]);
 					}
 				} catch (SQLException e) {
-					System.out.println("Error al insertar parametro " + params[i] + "al query.");
+					System.out.println("Error al insertar parametro " + params[i] + " al query.");
 					e.printStackTrace();
 					throw e;
 				}

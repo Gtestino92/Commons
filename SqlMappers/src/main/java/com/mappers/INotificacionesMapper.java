@@ -8,7 +8,7 @@ import com.commonsmodels.models.Notificacion;
 
 public interface INotificacionesMapper {
 
-	public List<Notificacion> getNotificaciones(Connection conn);
+	public Long getCantNotificaciones(Connection conn);
 
 	public List<Notificacion> getNotificacionesNuevas(Connection conn);
 

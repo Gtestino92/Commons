@@ -11,8 +11,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.commonsmodels.models.Pedido;
 import com.commonsmodels.models.Notificacion;
+import com.commonsmodels.models.Pedido;
 import com.mappers.INotificacionesMapper;
 import com.mappers.common.CommonMapper;
 
@@ -24,24 +24,25 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 	private static final String ID_PEDIDO = "ID_PEDIDO";
 	private static final String FECHA_GEN = "FECHA_GEN";
 	private static final String FECHA_CHECK = "FECHA_CHECK";
+	private static final String CANT_NOTIF = "CANT_NOTIF";
 
 	@Value("${db.notif.dias}")
 	private Integer maxDiasNotif;
 
 	@Override
-	public List<Notificacion> getNotificaciones(Connection conn) {
-		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN, FECHA_CHECK };
-		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
-				+ maxDiasNotif.toString() + " day ";
-		List<HashMap<String, String>> listNotifMap = executeQuery(conn, query, new String[] {}, outKeys);
-		return getListNotificationsByListMap(listNotifMap);
+	public Long getCantNotificaciones(Connection conn) {
+		String[] outKeys = new String[] { CANT_NOTIF };
+		String query = "SELECT COUNT(*) AS CANT_NOTIF FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
+				+ maxDiasNotif.toString() + " day ORDER BY FECHA_GEN DESC";
+		HashMap<String, String> listNotifMap = simpleSelect(conn, query, new String[] {}, outKeys);
+		return Long.parseLong(listNotifMap.get(CANT_NOTIF).toString());
 	}
 
 	@Override
 	public List<Notificacion> getNotificacionesNuevas(Connection conn) {
-		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN };
+		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN, FECHA_CHECK};
 		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
-				+ maxDiasNotif.toString() + " day AND FECHA_CHECK IS NULL";
+				+ maxDiasNotif.toString() + " day ORDER BY FECHA_GEN DESC";
 		List<HashMap<String, String>> listNotifMap = executeQuery(conn, query, new String[] {}, outKeys);
 		return getListNotificationsByListMap(listNotifMap);
 	}
@@ -60,8 +61,7 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 		executeUpdate(conn, query, paramsIn);
 	}
 
-	private List<Notificacion> getListNotificationsByListMap(
-			List<HashMap<String, String>> listNotificationsHash) {
+	private List<Notificacion> getListNotificationsByListMap(List<HashMap<String, String>> listNotificationsHash) {
 		List<Notificacion> listNotifications = new ArrayList<>();
 		for (HashMap<String, String> notifHash : listNotificationsHash) {
 			Long idPedido = Long.parseLong(notifHash.get(ID_PEDIDO));
