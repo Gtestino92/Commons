@@ -33,14 +33,14 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 	public Long getCantNotificaciones(Connection conn) {
 		String[] outKeys = new String[] { CANT_NOTIF };
 		String query = "SELECT COUNT(*) AS CANT_NOTIF FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
-				+ maxDiasNotif.toString() + " day ORDER BY FECHA_GEN DESC";
+				+ maxDiasNotif.toString() + " day  AND FECHA_CHECK IS NULL ORDER BY FECHA_GEN DESC";
 		HashMap<String, String> listNotifMap = simpleSelect(conn, query, new String[] {}, outKeys);
 		return Long.parseLong(listNotifMap.get(CANT_NOTIF).toString());
 	}
 
 	@Override
 	public List<Notificacion> getNotificacionesNuevas(Connection conn) {
-		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN, FECHA_CHECK};
+		String[] outKeys = new String[] { ID_PEDIDO, FECHA_GEN, FECHA_CHECK };
 		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE FECHA_GEN > NOW() - interval "
 				+ maxDiasNotif.toString() + " day ORDER BY FECHA_GEN DESC";
 		List<HashMap<String, String>> listNotifMap = executeQuery(conn, query, new String[] {}, outKeys);
@@ -59,6 +59,14 @@ public class NotificacionesMapper extends CommonMapper implements INotificacione
 		String[] paramsIn = new String[] { formatter.format(fechaCheck), idPedido.toString() };
 		String query = "UPDATE PEDIDOS_NOTIFICACIONES SET FECHA_CHECK = ? WHERE ID_PEDIDO = ?";
 		executeUpdate(conn, query, paramsIn);
+	}
+
+	@Override
+	public Boolean notificacionExiste(Connection conn, Long idPedido) {
+		String[] paramsIn = new String[] { idPedido.toString() };
+		String[] outKeys = new String[] { ID_PEDIDO };
+		String query = "SELECT * FROM PEDIDOS_NOTIFICACIONES WHERE ID_PEDIDO = ?";
+		return simpleSelect(conn, query, paramsIn, outKeys) != null;
 	}
 
 	private List<Notificacion> getListNotificationsByListMap(List<HashMap<String, String>> listNotificationsHash) {

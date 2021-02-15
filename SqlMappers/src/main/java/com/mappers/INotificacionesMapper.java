@@ -15,4 +15,6 @@ public interface INotificacionesMapper {
 	public void generarNotificacion(Connection conn, Long idPedido, Date fechaGen);
 
 	public void marcarComoLeida(Connection conn, Long idPedido, Date fechaCheck);
+
+	public Boolean notificacionExiste(Connection conn, Long idPedido);
 }
