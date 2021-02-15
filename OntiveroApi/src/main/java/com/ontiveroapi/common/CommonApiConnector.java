@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.commonsmodels.exceptions.ApiConnectionException;
 import com.commonsmodels.exceptions.ApiConnectionRestException;
 import com.commonsmodels.exceptions.InvalidRequestApiException;
+import com.commonsmodels.exceptions.InvalidRequestApiRestException;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -23,8 +24,14 @@ public abstract class CommonApiConnector {
 			System.out.println("Se realiza llamado http a API");
 			System.out.println(request);
 			response = httpClient.newCall(request).execute();
-			if (!response.isSuccessful())
-				throw new InvalidRequestApiException("Error en la consulta a la API", response.code());
+			if (!response.isSuccessful()) {
+				if ("S".equals(request.header("isRest")))
+					throw new InvalidRequestApiRestException("Error en la consulta a la API", response.code());
+				else
+					throw new InvalidRequestApiException("Error en la consulta a la API", response.code(),
+							"apiConnectError");
+			}
+
 			ResponseBody body = response.body();
 			strResponse = body.string();
 			MediaType contentType = body.contentType();
@@ -35,7 +42,7 @@ public abstract class CommonApiConnector {
 			else
 				throw new ApiConnectionException("apiConnectError", "Error de conexión con la API");
 		} finally {
-			if(response != null)
+			if (response != null)
 				response.close();
 		}
 	}
